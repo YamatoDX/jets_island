@@ -20,7 +20,7 @@ function makeGun(id) {
   const blk = std(0x3d4048, { metalness: 0.15, roughness: 0.8 }), dk = std(0x22242a, { metalness: 0.1, roughness: 0.85 });
   const wood = std(0x8a4e26, { roughness: 0.9 }), steel = std(0xa8acb4, { metalness: 0.3, roughness: 0.6 });
   const olive = std(0x46553a, { roughness: 0.7, metalness: 0.2 }), brass = std(0xc89a30, { metalness: 0.3, roughness: 0.6 });
-  const U = g.userData = { len: 0.4, sightY: 0.08, adsZ: -0.3, hip: new V3(0.19, -0.19, -0.36), rh: new V3(0, -0.05, 0.025), lh: null, mag: null, magPt: new V3(), magOut: new V3(0, -0.38, 0.05), bolt: null, slide: null, slideHome: 0, tiltDir: 1 };
+  const U = g.userData = { len: 0.4, sightY: 0.08, adsZ: -0.3, hip: new V3(0.19, -0.19, -0.36), rh: new V3(0, -0.05, 0.025), lh: null, mag: null, magPt: new V3(), magOut: new V3(0, -0.38, 0.05), bolt: null, slide: null, slideHome: 0, tiltDir: 1, reloadKind: 'mag' };
   const muzzle = new THREE.Object3D(); g.add(muzzle); U.muzzle = muzzle;
   const grip = (m, w, h, d) => { const b = box(w || 0.03, h || 0.1, d || 0.042, m, 0, -0.045, 0.02, g); b.rotation.x = 0.28; return b; };
   const guard = () => { box(0.008, 0.006, 0.06, dk, 0, -0.03, -0.035, g); box(0.008, 0.03, 0.006, dk, 0, -0.016, -0.065, g); box(0.006, 0.02, 0.008, dk, 0, -0.012, -0.03, g); };
@@ -52,7 +52,7 @@ function makeGun(id) {
       box(0.005, 0.008, 0.006, dk, -0.008, 0.079, 0.012, g); box(0.005, 0.008, 0.006, dk, 0.008, 0.079, 0.012, g);
       grip(wood, 0.033, 0.115, 0.046); guard();
       muzzle.position.set(0, 0.06, -0.285);
-      Object.assign(U, { len: 0.3, sightY: 0.0845, adsZ: -0.34, hip: new V3(0.15, -0.16, -0.4), lh: new V3(-0.028, -0.07, 0.03), magPt: new V3(-0.04, 0.04, -0.035), magOut: new V3(-0.06, -0.01, 0), tiltDir: -1 });
+      Object.assign(U, { len: 0.3, sightY: 0.0845, adsZ: -0.34, hip: new V3(0.15, -0.16, -0.4), lh: new V3(-0.028, -0.07, 0.03), magPt: new V3(-0.04, 0.04, -0.035), magOut: new V3(-0.06, -0.01, 0), tiltDir: -1, reloadKind: 'drum' });
       break;
     }
     case 'ak': {
@@ -120,7 +120,7 @@ function makeGun(id) {
       box(0.026, 0.09, 0.03, dk, 0, 0.02, -0.22, g);
       grip(dk); guard();
       muzzle.position.set(0, 0.11, -0.74);
-      Object.assign(U, { len: 0.74, sightY: 0.196, adsZ: -0.2, hip: new V3(0.2, -0.26, -0.3), lh: new V3(0, -0.01, -0.22), magPt: new V3(0, 0.06, -0.5), magOut: new V3(-0.05, -0.42, 0.1) });
+      Object.assign(U, { len: 0.74, sightY: 0.196, adsZ: -0.2, hip: new V3(0.2, -0.26, -0.3), lh: new V3(0, -0.01, -0.22), magPt: new V3(0, 0.06, -0.5), magOut: new V3(-0.05, -0.42, 0.1), reloadKind: 'tube' });
       break;
     }
     case 'sword': {
