@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>DREADMOOR — Night of the Three Isles</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  html, body { margin: 0; height: 100%; overflow: hidden; background: #000; font-family: "Segoe UI", Tahoma, sans-serif; color: #e8e4dc; user-select: none; }
+  canvas#gl { position: fixed; inset: 0; display: block; }
+  #jethud, #vig, #dmg, #armorhud { position: fixed; inset: 0; pointer-events: none; }
+  #jethud { width: 100%; height: 100%; }
+  #vig { box-shadow: inset 0 0 180px 40px rgba(0,0,0,.75); transition: box-shadow .4s; }
+  #dmg { background: radial-gradient(ellipse at center, rgba(160,0,0,0) 45%, rgba(190,0,0,.75) 100%); opacity: 0; }
+  #armorhud { display: none; border: 2px solid rgba(80,232,255,.35); margin: 14px; border-radius: 26px; box-shadow: inset 0 0 60px rgba(80,232,255,.18); }
+  #armorhud::after { content: "MK-I ARMOR ONLINE  ▪  FLIGHT: SPACE / CTRL  ▪  8 REPULSORS  9 SWARM  0 CHEST LANCE"; position: absolute; top: 8px; left: 50%; transform: translateX(-50%); font-size: 11px; letter-spacing: 3px; color: #7feaff; white-space: nowrap; }
+  #cross { position: fixed; left: 50%; top: 50%; width: 0; height: 0; pointer-events: none; }
+  #cross i { position: absolute; left: 0; top: 0; background: rgba(255,255,255,.92); box-shadow: 0 0 3px #000; }
+  #cross i:nth-child(1), #cross i:nth-child(2) { width: 2px; height: 9px; }
+  #cross i:nth-child(3), #cross i:nth-child(4) { width: 9px; height: 2px; }
+  #cross u { position: absolute; left: -1px; top: -1px; width: 2px; height: 2px; background: rgba(255,255,255,.8); }
+  #hitm { position: fixed; left: 50%; top: 50%; width: 26px; height: 26px; margin: -13px 0 0 -13px; pointer-events: none; opacity: 0; color: #fff; }
+  #hitm::before, #hitm::after { content: ""; position: absolute; left: 12px; top: -2px; width: 2px; height: 30px; background: linear-gradient(currentColor 0 32%, transparent 32% 68%, currentColor 68%); box-shadow: 0 0 2px #000; }
+  #hitm::before { transform: rotate(45deg); } #hitm::after { transform: rotate(-45deg); }
+  .panel { position: fixed; background: rgba(8,6,12,.55); border: 1px solid rgba(190,40,40,.45); border-radius: 8px; padding: 9px 13px; font-size: 13px; line-height: 1.55; pointer-events: none; text-shadow: 0 1px 2px #000; }
+  #stats { left: 14px; top: 14px; min-width: 215px; }
+  #stats b { color: #ff5a4a; } #stats .inf { color: #7dff8a; font-weight: 700; }
+  #weap { right: 14px; bottom: 14px; text-align: right; }
+  #weap .n { font-size: 21px; font-weight: 700; color: #ffd9a0; } #weap .a { font-size: 15px; color: #7dff8a; }
+  #wlist { font-size: 11px; opacity: .85; width: 330px; line-height: 1.6; }
+  #wlist span { margin-left: 8px; white-space: nowrap; } #wlist span.on { color: #ffd23a; font-weight: 700; }
+  #map { position: fixed; right: 14px; top: 14px; border: 1px solid rgba(190,40,40,.5); border-radius: 8px; background: rgba(4,8,16,.6); pointer-events: none; }
+  #msg { position: fixed; left: 50%; top: 17%; transform: translateX(-50%); font-size: 25px; font-weight: 800; letter-spacing: 2px; text-align: center; text-shadow: 0 0 14px #c00, 0 2px 3px #000; opacity: 0; transition: opacity .3s; pointer-events: none; white-space: nowrap; }
+  #big { position: fixed; left: 50%; top: 36%; transform: translate(-50%,-50%); font-size: 64px; font-weight: 900; letter-spacing: 6px; font-style: italic; color: #cfeaff; text-shadow: 0 0 30px #3af, 0 0 8px #fff, 0 4px 4px #000; opacity: 0; pointer-events: none; white-space: nowrap; }
+  #prompt { position: fixed; left: 50%; bottom: 21%; transform: translateX(-50%); font-size: 17px; background: rgba(0,0,0,.55); padding: 6px 16px; border-radius: 6px; border: 1px solid #a33; display: none; pointer-events: none; }
+  #hint { position: fixed; left: 14px; bottom: 14px; font-size: 11.5px; opacity: .78; line-height: 1.5; pointer-events: none; text-shadow: 0 1px 2px #000; max-width: 520px; }
+  kbd { background: #2a1a1c; border: 1px solid #733; border-radius: 3px; padding: 0 5px; font-family: Consolas, monospace; font-size: 12px; color: #ffd9a0; }
+  #start { position: fixed; inset: 0; background: radial-gradient(ellipse at 50% 20%, #2a0a12 0%, #06040a 62%, #000 100%); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 10; cursor: pointer; overflow: auto; }
+  #start h1 { font-family: Georgia, "Times New Roman", serif; font-size: 68px; letter-spacing: 12px; margin: 0; color: #d01822; text-shadow: 0 0 34px #f00, 0 5px 0 #300; }
+  #start h2 { font-family: Georgia, serif; font-weight: 400; letter-spacing: 6px; margin: 4px 0 22px; color: #b9a58c; font-size: 19px; }
+  #start .grid { display: grid; grid-template-columns: repeat(3, minmax(230px, 300px)); gap: 12px 22px; font-size: 13px; line-height: 1.75; }
+  #start .grid div { background: rgba(255,255,255,.04); border: 1px solid rgba(190,40,40,.35); border-radius: 8px; padding: 10px 14px; }
+  #start h3 { margin: 0 0 4px; color: #ff6a4a; font-size: 13px; letter-spacing: 2px; }
+  #start .go { margin-top: 24px; font-size: 23px; letter-spacing: 5px; color: #fff; animation: pulse 1.2s infinite; }
+  @keyframes pulse { 50% { opacity: .35; } }
+  @media (max-width: 1000px) { #start .grid { grid-template-columns: 1fr; } #start h1 { font-size: 40px; } }
+</style>
+</head>
+<body>
+<canvas id="jethud"></canvas>
+<div id="vig"></div><div id="dmg"></div><div id="armorhud"></div>
+<div id="cross"><i></i><i></i><i></i><i></i><u></u></div><div id="hitm"></div>
+<div id="stats" class="panel"></div>
+<canvas id="map" width="170" height="204"></canvas>
+<div id="weap" class="panel"><div class="n" id="wname"></div><div class="a" id="ammo">AMMO ∞</div><div id="wlist"></div></div>
+<div id="msg"></div><div id="big"></div><div id="prompt"></div>
+<div id="hint"></div>
+
+<div id="errbox" style="display:none;position:fixed;left:0;right:0;top:0;z-index:20;background:#7a0d0d;color:#fff;padding:10px 16px;font:14px Consolas,monospace"></div>
+<div id="start">
+  <h1>DREADMOOR</h1>
+  <h2>NIGHT OF THE THREE ISLES</h2>
+  <div class="grid">
+    <div><h3>ON FOOT</h3>
+      <kbd>W A S D</kbd> move &nbsp; <kbd>Shift</kbd> sprint<br><kbd>LMB</kbd> fire &nbsp; <kbd>RMB</kbd> aim down sights<br><kbd>R</kbd> reload (spare magazines are infinite)<br><kbd>Space</kbd> jump / fly up &nbsp; <kbd>Ctrl</kbd> down<br>
+      <kbd>V</kbd> first / third person<br><kbd>E</kbd> jet / boat &nbsp; <kbd>M</kbd> music</div>
+    <div><h3>ARSENAL — HEADSHOTS DEAL DOUBLE</h3>
+      <kbd>1</kbd> Handgun <kbd>2</kbd> Revolver <kbd>3</kbd> AK-47<br><kbd>4</kbd> M416 <kbd>5</kbd> M249 <kbd>6</kbd> Rocket Launcher<br>
+      <kbd>7</kbd> Stormfang Blade &nbsp; <kbd>Wheel</kbd> cycle<br><kbd>T</kbd> thunder chant — awakens the blade<br>(then <kbd>RMB</kbd> calls lightning from the sky)</div>
+    <div><h3>POWERS</h3>
+      <kbd>G</kbd> ascend: 5 power forms &nbsp; <kbd>H</kbd> power down<br><kbd>F</kbd> energy blast &nbsp; <kbd>X</kbd> mega wave<br>
+      <kbd>C</kbd> wrist-comm: summon battle armor<br><kbd>8</kbd> Repulsors <kbd>9</kbd> Missile swarm <kbd>0</kbd> Chest lance</div>
+    <div><h3>FIGHTER JET</h3>
+      <kbd>W</kbd>/<kbd>S</kbd> throttle &nbsp; <kbd>Shift</kbd> afterburner<br><kbd>Mouse</kbd> steer (pull up past 90 kts to take off)<br><kbd>A</kbd>/<kbd>D</kbd> rudder &nbsp; <kbd>LMB</kbd> cannon<br><kbd>RMB</kbd> / <kbd>Space</kbd> homing missile<br><kbd>V</kbd> chase cam / cockpit + HUD &nbsp; <kbd>I</kbd> invert</div>
+    <div><h3>SPEED BOAT</h3>
+      <kbd>W</kbd>/<kbd>S</kbd> throttle &nbsp; <kbd>A</kbd>/<kbd>D</kbd> steer<br><kbd>Mouse</kbd> aim twin machine guns<br><kbd>LMB</kbd> fire &nbsp; <kbd>V</kbd> view</div>
+    <div><h3>THE HUNT</h3>
+      Three cursed isles. Each has four monster houses that spew ghosts, vampires and horned brutes.<br>
+      You cannot die. Burn every house down.</div>
+  </div>
+  <div class="go">— CLICK TO BEGIN —</div>
+</div>
+
+<script>
+  // self-test hook: open index.html#test to run an automated smoke test
+  // show any load/run error on screen instead of failing silently
+  window.addEventListener('error', (e) => {
+    const b = document.getElementById('errbox'); if (!b) return;
+    b.style.display = 'block'; b.textContent = 'Game error: ' + e.message + ' (' + String(e.filename).split('/').pop() + ':' + e.lineno + ') — press Ctrl+F5 to reload the latest files.';
+  });
+  if (location.hash.startsWith('#test')) { window.__errs = []; window.onerror = (m, s, l) => { window.__errs.push(m + ' @' + String(s).split('/').pop() + ':' + l); }; }
+</script>
+<script src="lib/three.min.js?v=3"></script>
+<script src="js/audio.js?v=3"></script>
+<script src="js/world.js?v=3"></script>
+<script src="js/weapons.js?v=3"></script>
+<script src="js/game.js?v=3"></script>
+</body>
+</html>
